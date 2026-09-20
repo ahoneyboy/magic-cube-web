@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 全局基础（设计系统 §3）：主题橙 #FF8A3D / 背景 #FFF9EE / 正文 #2D3748 */
+html,
+body {
+  height: 100%;
+  overscroll-behavior-y: none;
+}
+
+body {
+  @apply bg-cream text-ink text-sm antialiased;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 大字号模式：根 class 由 App.vue 挂载 */
+.large-font body,
+body.large-font {
+  font-size: 17px;
+}
+
+/* 主容器：内容限宽 640px，桌面放宽由页面内 md:/lg: 控制 */
+.page {
+  @apply mx-auto w-full max-w-3xl px-4 pb-24 pt-4 md:px-6;
+}
+
+/* 卡片：白底、rounded-3xl、投影 */
+.card {
+  @apply rounded-3xl bg-white shadow-card;
+}
+
+/* 触屏：可点元素最小 44px 命中区 */
+.tap {
+  @apply min-h-[44px] select-none active:opacity-80;
+  touch-action: manipulation;
+}
+
+.btn-primary {
+  @apply tap inline-flex items-center justify-center gap-1.5 rounded-2xl bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-[0_4px_0_rgba(247,103,7,0.45)] transition active:translate-y-0.5 active:shadow-none;
+}
+
+.btn-ghost {
+  @apply tap inline-flex items-center justify-center gap-1.5 rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-ink shadow-card ring-1 ring-black/5 transition active:translate-y-0.5 active:shadow-none;
+}
+
+.chip {
+  @apply inline-flex items-center gap-1 rounded-full bg-cream px-2.5 py-1 text-xs text-subtle;
+}
+
+.section-title {
+  @apply text-base font-semibold text-ink;
+}
+
+.muted {
+  @apply text-xs text-faint;
+}
+
+/* 隐藏滚动条但保留滚动（公式卡横向条） */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 魔方画布容器：禁用浏览器手势 */
+.cube-stage {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}

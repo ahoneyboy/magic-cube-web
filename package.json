@@ -1,0 +1,36 @@
+{
+  "name": "magic-cube-web",
+  "private": true,
+  "version": "1.0.0",
+  "description": "魔力魔方 Web 版（PWA）—— 复刻自微信小程序《魔力魔方》",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/patch-sw.mjs",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "cubejs": "^1.3.2",
+    "echarts": "^5.6.0",
+    "localforage": "^1.10.0",
+    "lucide-vue-next": "^0.544.0",
+    "pinia": "^3.0.3",
+    "three": "^0.180.0",
+    "vue": "^3.5.18",
+    "vue-echarts": "^7.0.3",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/test-utils": "^2.4.6",
+    "autoprefixer": "^10.4.21",
+    "jsdom": "^26.1.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "vite": "^7.1.2",
+    "vite-plugin-pwa": "^1.0.2",
+    "vitest": "^3.2.4"
+  }
+}
