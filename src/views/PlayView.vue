@@ -92,18 +92,25 @@ async function onScramble() {
 
   const { moves, mode } = await scramble.generate('3x3');
   if (!scramble.scrambling.value) return; // 生成期间已被「复原」取消
-  scramble.sequence.value = moves;
   scramble.mode.value = mode === 'random-state' ? 'WCA 随机状态打乱' : 'WCA 随机步打乱';
+  if (scramble.skipping.value) {
+    // 生成期间已点「跳过」：一次性打到最终状态并收尾（对照小程序 onScramble 的 then 分支）
+    scramble.finishSkippedInstantly(cubeRef.value, moves, onScrambleFinished);
+    return;
+  }
+  scramble.sequence.value = moves;
   status.value = scramble.paused.value ? '已暂停：点「继续」开始演示' : '打乱演示中…';
 
-  scramble.playSteps(cubeRef.value, moves, () => {
-    // 打乱完成 → 结果锁定：禁止转层、仍可拖动视角
-    resultLocked.value = true;
-    cubeRef.value.setAutoSpin(false);
-    cubeRef.value.resetView();
-    status.value = '打乱完成！可「看解法」或「去计时」';
-    lockNow();
-  });
+  scramble.playSteps(cubeRef.value, moves, onScrambleFinished);
+}
+
+// 打乱完成（含跳过收尾）→ 结果锁定：禁止转层、仍可拖动视角
+function onScrambleFinished() {
+  resultLocked.value = true;
+  cubeRef.value.setAutoSpin(false);
+  cubeRef.value.resetView();
+  status.value = '打乱完成！可「看解法」或「去计时」';
+  lockNow();
 }
 
 function onPauseScramble() {

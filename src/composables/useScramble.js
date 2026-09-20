@@ -50,6 +50,9 @@ export function useScramble() {
    */
   function playSteps(cube, moves, finished) {
     onFinished = finished;
+    // 新打乱开始时才重置跳过标志：上一次 skip 之后保持 true，
+    // 进行中那一步动画的 onDone 依赖它直接返回（见 finish 注释）
+    skipping.value = false;
     playStep(cube, moves, 0);
   }
 
@@ -82,7 +85,10 @@ export function useScramble() {
 
   function finish(cube, moves) {
     clearTimers();
-    skipping.value = false;
+    // 注意：这里不清除 skipping —— 正在播放的那一步动画结束后，它的 onDone 依赖
+    // skipping=true 直接返回以终止链式播放（剩余步数已由 skip() 一次性应用；
+    // 若在此清除会导致链条复活、剩余步数被二次应用——对照小程序 play.js finishScramble）。
+    // skipping 在下一次 playSteps / abort 时才重置。
     paused.value = false;
     inflight = false;
     scrambling.value = false;
@@ -92,6 +98,17 @@ export function useScramble() {
       onFinished = null;
       cb();
     }
+  }
+
+  /** 生成期间已点「跳过」：公式生成完毕后一次性应用整条并收尾（对照小程序 onScramble 的 then 分支） */
+  function finishSkippedInstantly(cube, moves, finished) {
+    sequence.value = moves;
+    activeIndex.value = moves.length - 1;
+    if (cube && moves.length) {
+      cube.applyMoves(moves, { duration: 90 });
+    }
+    onFinished = finished;
+    finish(cube, moves);
   }
 
   /** 暂停：只放开视角（由调用方设置 cube.setTouchEnabled），停在下一条 */
@@ -152,6 +169,7 @@ export function useScramble() {
     resume,
     skip,
     abort,
+    finishSkippedInstantly,
     stepTimingsOf
   };
 }

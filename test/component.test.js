@@ -200,6 +200,56 @@ describe('useScramble —— 打乱编排', () => {
     expect(sc.scrambling.value).toBe(false);
   });
 
+  it('回归：跳过后进行中动画的 onDone 不复活播放链（剩余步不二次应用）', async () => {
+    const sc = useScramble();
+    // 用"异步动画"的假控制器模拟真实 in-flight 动画（onDone 延迟触发）
+    const calls = { move: [], applyMoves: [] };
+    const fake = {
+      calls,
+      move: (n, o) => {
+        calls.move.push(n);
+        setTimeout(() => o && o.onDone && o.onDone(), 5); // 模拟动画飞行中
+        return true;
+      },
+      applyMoves: (seq) => {
+        calls.applyMoves.push(...seq);
+        return seq.length;
+      },
+      setState: () => true,
+      setInteractive: () => {},
+      setTouchEnabled: () => {},
+      setAutoSpin: () => {},
+      isAnimating: () => false,
+      resetView: () => {},
+      getFacelet: () => 'U'.repeat(54),
+      isSolved: () => false,
+      setOrientation: () => true,
+      highlight: () => {},
+      clearHighlight: () => {},
+      destroy: () => {}
+    };
+    sc.scrambling.value = true;
+    const moves = ['R', 'U', 'R', 'U', 'R', 'U'];
+    const finished = vi.fn();
+    // 播到第 2 步时点跳过（此刻第 2 步动画还在飞）
+    let played = 0;
+    const origMove = fake.move.bind(fake);
+    fake.move = (n, o) => {
+      played++;
+      if (played === 2) setTimeout(() => sc.skip(fake, moves), 0);
+      return origMove(n, o);
+    };
+    sc.playSteps(fake, moves, finished);
+    await new Promise((r) => setTimeout(r, 60));
+    expect(finished).toHaveBeenCalledTimes(1);
+    // 正常播完 2 步 + 跳过一次性应用剩余 4 步：总应用数恰好 = 公式长度
+    expect(calls.move).toEqual(['R', 'U']);
+    expect(calls.applyMoves).toEqual(['R', 'U', 'R', 'U']);
+    // 关键断言：跳过之后链式播放不得复活（老 bug 会把剩余 4 步再用 move 逐条补一遍）
+    expect(calls.move.length).toBe(2);
+    expect(sc.scrambling.value).toBe(false);
+  });
+
   it('generate：3x3 随机步回退可用且通过引擎校验', async () => {
     const sc = useScramble();
     const { moves, mode } = await sc.generate('3x3');
